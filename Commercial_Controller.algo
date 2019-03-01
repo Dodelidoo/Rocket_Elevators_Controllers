@@ -1,0 +1,279 @@
+
+        SEQUENCE Init_Elev_Sys
+            SET BATTERY Status = On
+            SET Elevator starting position to 0 '//groundfloor'
+            SET Column1 IS covering ElevatorFloor 0 TO 15
+            SET Column2 IS covering ElevatorFloor 16 TO 32
+            SET Column3 IS covering ElevatorFloor 33 TO 49
+            SET Column4 IS covering ElevatorFloor 50 TO 66
+            SET Elevator Status = IDLE
+            SET Elevators Doors TO Closed
+            CALL OperateBattery
+
+        END SEQUENCE
+
+
+    CALL Init_Elev_Sys
+
+             //////////Call Elevator////////
+
+            SEQUENCE CallElevator USING Columns AND Floor
+                 CALL ButtonLightOn WITH Direction AND CallButton
+                 CALL BestElevator WITH ElevatorFloor AND Column AND Status AND Direction AND RETURNING Elevator
+                 CALL MainPanelFloor WITH RequestFloor AND Column
+                 CALL InsideDisplay
+                 CALL OutsideDisplay
+                 CALL ButtonLightOff USING RequestFloor
+
+
+            END SEQUENCE
+
+
+            //////////////////Status///////////////////
+
+            SEQUENCE IdleStatus
+                SET Elevator Status TO IDLE
+            END SEQUENCE
+
+            SEQUENCE MovingStatus
+                SET Elevator Status TO MOVING
+            END SEQUENCE
+
+            SEQUENCE StopStatus
+                SET Elevator Status TO STOP
+
+                ///////Battery /////////
+
+            SEQUENCE OperateBattery
+                WHILE Battery status IS On
+                    FOR EACH Elevator IN Elevators
+                        WHILE FloorList IS NOT EMPTY
+                            READ RequestFloor From Elevator Floor_List
+
+                            IF RequestFloor = Elevator_Floor THEN
+                                REMOVE Floor FROM Elevator Floor_List 
+                                CALL InsideDisplay 
+                                CALL StopStatus 
+                                CALL ButtonLightOff 
+                                CALL OpenDoor
+
+
+                            ELSE IF RequestFloor > Elevator_Floor THEN
+                                CALL Operate_Up WITH Elevator 
+                                CALL MovingStatus 
+                                CALL InsideDisplay WITH Elevator Floor
+                                
+                                
+                            ELSE IF RequestFloor < Elevator_Floor THEN
+                                CALL InsideDisplay WITH Elevator Floor 
+                                CALL Operate_Down WITH Elevator
+                                CALL MovingStatus       
+
+                            END IF
+
+                        END WHILE
+                            CALL IdleStatus
+                    END FOR
+
+                END WHILE
+            END SEQUENCE
+
+
+            //////////////////Display///////////////////////
+
+            SEQUENCE OutsideDisplay USING Floor
+
+                FOR EACH Elevator IN Column
+
+                    WHILE RequestFloor IS Pressed 
+                      SHOW RequestFloor Number on screen INIT Time to 2 sec 
+                      SHOW Elevator Name AND SET Timer TO 5 sec 
+                      SHOW NONE
+
+                END WHILE
+            END SEQUENCE
+
+
+            SEQUENCE InsideDisplay USING Floor
+
+                FOR EACH Elevator IN Column
+                    WHILE Elevator_Floor_List Floor IS ON 
+                        SHOW RequestFloor NUMBER on screen UNTIL RequestFloor IS EQUAL to ElevatorFloor
+
+                    END WHILE
+                END FOR
+            END SEQUENCE
+
+
+                        //////////////////////Doors///////////////////////////
+            SEQUENCE OpenDoor WITH Floor
+
+                SET Elevator Doors TO Open
+                    IF DoorIsOpen THEN
+                        SET timer to 7 sec 
+                        CALL CloseDoor
+                    
+
+                    END IF
+
+            END SEQUENCE
+
+            //
+                SEQUENCE CloseDoor WITH Floor
+
+                    SET Elevator Doors TO CLOSE
+                        IF door is obstruct THEN
+                            CALL OpenDoor
+                        ELSE IF door is not obstruct THEN
+                            Close Door
+                        END IF                      
+
+
+                END SEQUENCE   
+
+
+            //////////Moving elevator///////
+        // Move_Up
+            SEQUENCE Operate_Up USING Elevator Floor AND RequestFloor
+                FOR EACH Elevator in Elevators
+                    IF RequestFloor < Elevator Floor THEN
+
+                    INCREMENT Elevator Floor by 1
+
+                    REPEAT-UNTIL RequestFloor = Elevator Floor
+
+                    END IF
+                END FOR
+            END SEQUENCE
+
+
+        // Move_Down
+            SEQUENCE Operate_Down USING Elevator Floor AND Floor
+                FOR EACH Elevator in Elevators
+                    IF Floor > Elevator Floor THEN
+
+                    DECREMENT Elevator Floor by 1
+
+                    REPEAT-UNTIL RequestFloor = Elevator Floor
+
+                    END IF
+                END FOR
+            END SEQUENCE
+
+
+                ///////////////// Control Panel ////////////////////
+
+            SEQUENCE MainPanelFloor USING Floor
+                
+                    FOR EACH Column in Battery Columns
+
+                        IF RequestFloor IS <= 15 THEN
+                            SET Column TO Column1
+                            CALL CallElevator WITH Floor AND Column RETURNING Elevator
+                            ADD RequestFloor TO Elevator FloorList
+                            RETURN Elevator
+
+                        ELSE IF RequestFloor IS > 15 AND <= 32 THEN
+                            SET Column TO Column2
+                            CALL CallElevator WITH Floor AND Column RETURNING Elevator
+                            ADD RequestFloor TO Elevator FloorList
+                            RETURN Elevator
+
+                        ELSE IF RequestFloor  IS > 32 AND <= 49 THEN
+                            SET Column TO Column3
+                            CALL CallElevator WITH Floor AND Column RETURNING Elevator
+                            ADD RequestFloor TO Elevator FloorList
+                            RETURN Elevator
+
+
+                        ELSE IF RequestFloor IS > 49 AND <= 66 THEN
+                            SET Column TO Column4
+                            CALL CallElevator WITH Floor AND Column RETURNING Elevator
+                            ADD RequestFloor TO Elevator FloorList
+                            RETURN Elevator
+
+                        END IF
+                    END FOR
+            END SEQUENCE
+
+          
+            
+                    ////////////////////////Best Elevator//////////////////////
+            SEQUENCE BestElevator USING ElevatorFloor AND Column AND Status AND Direction
+                FOR EACH Elevator IN Column
+
+                    IF ElevatorFloor Status IS IDLE THEN
+                        RETURN Elevator
+
+                    ELSE IF ElevatorFloor Status IS MOVING AND Direction IS MOVING THEN
+                        CALL SendRequest WITH ElevatorFloor AND Direction
+                        SET LessBusy TO Elevator
+                        RETURN Elevator
+                    END IF
+                END FOR
+            END SEQUENCE
+
+                    ////////////////////////Send Request////////////////
+
+            SEQUENCE SendRequest USING ElevatorFloor AND CallButton AND Status
+                FOR EACH CallButtons IN Column
+                    IF CallButton < ElevatorFloor AND Status IS MOVING THEN
+                        ADD CallButton to Elevator FloorList
+                        Compute FloorList by DESCENDING
+
+                    ELSE IF CallButton > ElevatorFloor AND Status IS MOVING THEN
+                        ADD CallButton TO Elevator FloorList
+                        COMPUTE FloorList by DESCENDING
+                    END IF
+
+                    CALL FindLessBusy WITH FloorList
+                    RETURN FloorList
+                END FOR
+            END SEQUENCE
+                    
+                    //////////////////////Find Less Busy///////////////////////
+
+            SEQUENCE FindLessBusy USING ElevatorFloor AND Status AND FloorList
+                SET ListLength TO TotalFloor
+                    FOR EACH Elevator IN Elevators
+                        IF List_Length > LENGTH of FloorList THEN
+                            SET List_Length TO LENGTH of FloorList
+
+                        END IF
+
+                    END FOR
+
+                        DETERMINE LessBusy WITH List_Length
+                        RETURN LessBusy
+
+            END SEQUENCE
+
+
+                /////////////////// Find button///////////////////
+            SEQUENCE FindCallButton USING Direction AND Floor
+                FOR EACH  CallButton in CallButtons
+                    IF Direction = CallButton Direction AND RequestFloor = CallButtonFloors THEN
+                        RETURN CallButton
+                    END IF
+                END FOR
+            END SEQUENCE
+
+            // // Open light
+             SEQUENCE ButtonLightOn  USING Direction AND Floor
+                 CALL FindCallButton WITH Direction AND RequestFloor RETURNING CallButton
+                 SET CallButton Light On
+             END SEQUENCE
+
+
+            // // Closing light
+            SEQUENCE ButtonLightOff  USING Direction AND Floor
+                CALL FindCallButton WITH Direction AND RequestFloor RETURNING CallButton
+                SET CallButton Light Off
+            END SEQUENCE
+
+            
+
+
+
+            
+            
