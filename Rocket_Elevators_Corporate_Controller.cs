@@ -3,38 +3,39 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Timers;
-//a effacer
 namespace Rocket_Elevators_Corporate_Controller
 {
     class Program
-    // Sanchez is the name of my Controller
-    // all begin here that the initial battery
+    // Dodelidoo is the name of my Controller
+    // all test begin here
     {
         static void Main(string[] args)
         {
-            ElevatorController Sanchez1 = new ElevatorController(85, 4, 5);// battery properties
-            Console.WriteLine("Starting initial Battery : Vrooom Baby!! ");
-            Console.WriteLine("Column number is : " + Sanchez1.nbColumns);
-            Console.WriteLine("Battery name is :  " + Sanchez1);
+            ElevatorController Dodelidoo1 = new ElevatorController(85, 4, 5);// battery properties
+            Console.WriteLine("Starting initial Battery : Vrooom Vrooom Baby!! ");
+            Console.WriteLine("Column number is : " + Dodelidoo1.nbColumns);
+            Console.WriteLine("Battery name is :  " + Dodelidoo1);
 
-            Sanchez1.Battery1.columnList[1].elevatorList[0].FloorNumber = 1;
-            Sanchez1.Battery1.columnList[1].elevatorList[1].FloorNumber = 23;
-            Sanchez1.Battery1.columnList[1].elevatorList[2].FloorNumber = 33;
-            Sanchez1.Battery1.columnList[1].elevatorList[3].FloorNumber = 40;
-            Sanchez1.Battery1.columnList[1].elevatorList[4].FloorNumber = 42;
+            //Elevator origins
+            Dodelidoo1.Battery1.columnList[1].elevatorList[0].FloorNumber = 1;
+            Dodelidoo1.Battery1.columnList[1].elevatorList[1].FloorNumber = 23;
+            Dodelidoo1.Battery1.columnList[1].elevatorList[2].FloorNumber = 33;
+            Dodelidoo1.Battery1.columnList[1].elevatorList[3].FloorNumber = 40;
+            Dodelidoo1.Battery1.columnList[1].elevatorList[4].FloorNumber = 42;
 
+            //Find from floor and find from level
+            //need to assign a specific elevator to request, not the closest...
 
-            Sanchez1.AssignElevator(24);
-            Sanchez1.AssignElevator(28);
-        //   Sanchez1.AssignElevator(1);
-        //   Sanchez1.AssignElevator(1);
-        //  Sanchez1.AssignElevator(36);
+            // Direction command / requested floors
+            Dodelidoo1.AssignElevator(24);
+            Dodelidoo1.AssignElevator(28);
+            Dodelidoo1.RequestElevator(33,1);
+            Dodelidoo1.AssignElevator(24);
+            Dodelidoo1.RequestElevator(40, 1);
+            Dodelidoo1.AssignElevator(36);
 
-
-        //  Sanchez1.AssignElevator(14);
-        //  Sanchez1.RequestElevator(10, 30);
-
-            Console.ReadLine();
+        
+          //  Console.ReadLine();
         }
     }
     //=====================================Elevator Controller==================================
@@ -54,16 +55,16 @@ namespace Rocket_Elevators_Corporate_Controller
 
         //elevator taking request of people with
         //requested floor number and number of floors
-        //and send the nearest elevator after its send
+
+        //send the nearest elevator after its send
         // to a floor list with requested floor number
         //they send the nearest elevator to people
 
         public void RequestElevator(int FloorNumber, int requestedFloorNumber)
         {
-            Console.WriteLine("someone requested an elevator at floor: " + requestedFloorNumber);
-            var column1 = Battery1.FindColumn(requestedFloorNumber);
-            var nearestElevator = column1.FindNearestElevator(requestedFloorNumber);
-            column1.CreateElevators(FloorNumber);
+            Console.WriteLine("someone requested an elevator at floor: " + FloorNumber);
+            var column1 = Battery1.FindColumn(FloorNumber);
+            var nearestElevator = column1.FindNearestElevator(FloorNumber);
             Console.WriteLine("CallButtonLightOn");
             Console.WriteLine("Returning " + nearestElevator.elevatorName + " of Column number " + Battery1.nbColumns);
 
@@ -73,13 +74,20 @@ namespace Rocket_Elevators_Corporate_Controller
         // its gonna assign the best elevator depending where the user is moving to
         public void AssignElevator(int requestedFloorNumber)
 
-
         {
             Console.WriteLine("Requested Floor at : " + requestedFloorNumber);
             var column1 = Battery1.FindColumn(requestedFloorNumber);
 
-            var nearestElevator = column1.FindNearestElevator(requestedFloorNumber);
+            var nearestElevator = column1.FindNearestElevator(1);
 
+            
+
+            if (nearestElevator.FloorNumber != 1){
+                nearestElevator.AddFloorToList(1);
+                nearestElevator.MoveNext();
+            } else {
+                nearestElevator.OpeningAndClosingDoors();
+            }
 
             nearestElevator.AddFloorToList(requestedFloorNumber);
             nearestElevator.MoveNext();
@@ -104,31 +112,33 @@ namespace Rocket_Elevators_Corporate_Controller
             this.CreateColumns();
 
         }
-        //  where columns is creating      
+        //  Where columns is created      
         public void CreateColumns()
         {
             for (int i = 0; i < this.nbColumns; i++)
             {
                 var columns = new Column(nbFloors, nbElevatorsByColumns, "Column " + i);
+                //Console.WriteLine();
                 this.columnList.Add(columns);
             }
 
         }
-        // Screen display panel where people choice for his level to go
-        // and show the number in screen of people choice
 
-        public int DisplayMainPanel(int requestedFloorNumber)       //a faire
-        {
-//            foreach (var button in 
-            return requestedFloorNumber;
+        // Screen display panel where people choose for his level to go
+        // and show the number in screen of people choice
+        
+        public void DisplayMainPanel(int requestedFloorNumber)
+        {        
+            Console.WriteLine(requestedFloorNumber);            
         }
+
         // each columns have a range to deserved
-        // and it s associate to people request
+        // and it's associate to people request
 
         public Column FindColumn(int requestedFloor)
 
         {
-            if (requestedFloor <= 22)
+            if (requestedFloor >= 2 && requestedFloor <= 22)
             {
                 return columnList[0];
             }
@@ -188,25 +198,28 @@ namespace Rocket_Elevators_Corporate_Controller
                 }
             }
         }
-        // find the best elevator with requested floor number and number of  floors
+        // find the best elevator with requested floor number and number of floors
         // making the difference for send the best elevator for people request
         public Elevator FindNearestElevator(int requestedFloorNumber)
         {
-            var bestDifference = 27;
-            var nearestElevator = 1;
+            var newDiff = 27;
+            Elevator nearestElevator = null;
+            var oldDiff = 100;
 
             for (var i = 0; i < elevatorList.Count; i++)
             {
-                var differenceFloor = Math.Abs(
+                newDiff = Math.Abs(
                     requestedFloorNumber - elevatorList[i].FloorNumber
                 );
-                if (differenceFloor < bestDifference)
-                {
-                    bestDifference = differenceFloor;
-                    nearestElevator = i;
+               
+                if (newDiff < oldDiff){
+                    nearestElevator = elevatorList[i];
+                    oldDiff = newDiff;
                 }
             }
-            return elevatorList[nearestElevator];
+        //    Console.WriteLine("!!!!!!!!!!!!!!!!!!!!!");
+            Console.WriteLine(nearestElevator.elevatorName);
+            return nearestElevator;
         }
     }
     //=============================== CallButton======================================
@@ -240,7 +253,7 @@ namespace Rocket_Elevators_Corporate_Controller
         public Elevator(string elevatorName, int FloorNumber)
         {
             this.elevatorName = elevatorName;
-            this.direction = "Stopped";
+            this.direction = "Stop";
             this.status = "Idle";
             this.FloorNumber = FloorNumber;
             requestFloorList = new List<int>();
@@ -249,13 +262,11 @@ namespace Rocket_Elevators_Corporate_Controller
         {
             int requestedFloorNumber = requestFloorList[0];
 
-            while (requestedFloorNumber != 1)
-            {
                 if (FloorNumber == requestedFloorNumber)
                 {
                     // make move elevator with interval of 0.3 sec by floor level
-                    // with number of requested floor number an Floor Number
-
+                    // with requested floor number and Floor Number
+                //    Console.WriteLine("TEST1");
                     Console.WriteLine("CallButtonLightOff");
 
                     OpeningAndClosingDoors();
@@ -263,33 +274,35 @@ namespace Rocket_Elevators_Corporate_Controller
                 }
                 else if (requestedFloorNumber > FloorNumber)
                 {
-                    MoveUp();
-                    System.Threading.Thread.Sleep(100);
+                //    Console.WriteLine("TEST2");
+                    MoveUp(requestedFloorNumber);
+                    System.Threading.Thread.Sleep(300);
                     Console.WriteLine(FloorNumber);
                 }
                 else
                 {
-                    MoveDown();
-                    System.Threading.Thread.Sleep(100);
+                //    Console.WriteLine("TEST3");
+                    MoveDown(requestedFloorNumber);
+                    System.Threading.Thread.Sleep(300);
                     Console.WriteLine(FloorNumber);
                 }
-            }
+            // }
             Console.WriteLine("CallButtonLighton");
             ResetElevatorToFirstLobby();
             Console.WriteLine("CallButtonLightOff");
             OpeningAndClosingDoors();
         }
-        //making a timer in 1 sec for open door
+        //making a timer in 0.4 sec for open door
         // and wait 1 sec for close door 
         public void OpeningAndClosingDoors()
         {
             Console.WriteLine("Ding!  Open door");
-            System.Threading.Thread.Sleep(1000);
-            Console.WriteLine("Dong!  Closing Door");
-            System.Threading.Thread.Sleep(1000);
+            System.Threading.Thread.Sleep(400);
+            Console.WriteLine("Dong!  Close Door");
+            System.Threading.Thread.Sleep(400);
         }
         //When the elevator is done is job with the task in the list
-        //its gonna remove the floor from the request floor list 
+        //its gonna remove the floor from the request floor list
         private int ResetRequestedFloorNumber()
         {
             requestFloorList.RemoveAt(0);
@@ -302,30 +315,33 @@ namespace Rocket_Elevators_Corporate_Controller
 
         }
         public void ResetElevatorToFirstLobby()
-
         {
-            while (FloorNumber != 1)
+            while (this.FloorNumber > 1)
             {
-                MoveDown();
+                MoveDown(1);
+                System.Threading.Thread.Sleep(100);
                 Console.WriteLine(FloorNumber);
-                if (FloorNumber == 1)
-                {
-                    Console.WriteLine("You are at floor " + FloorNumber);
-                    
-                }
             }
         }
-        // move up ++
-        public void MoveUp()
+
+        // move up 
+        public void MoveUp(int requestedFloorNumber)
         {
-            FloorNumber++;
-            Console.WriteLine("MovingUp");
+            while(FloorNumber < requestedFloorNumber) {
+                FloorNumber++;
+                Console.WriteLine("MovingUp");
+                Console.WriteLine(FloorNumber);
+            }
+            
         }
-        // moving down --
-        public void MoveDown()
+        // moving down 
+        public void MoveDown(int requestedFloorNumber)
         {
-            FloorNumber--;
-            Console.WriteLine("MovingDown");
+            while(FloorNumber > requestedFloorNumber) {
+                FloorNumber--;
+                Console.WriteLine("MovingDown");
+                Console.WriteLine(FloorNumber);
+            }
         }
         // Add the requested of people and add it in request floor list
         // the requested floor is making by descending  
