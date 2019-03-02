@@ -1,0 +1,14 @@
+{
+  "ProjectFilePath": "c:\\Users\\Charles H Codeboxx\\Desktop\\Odyssey\\Week_3_CSharp\\Week_3_CSharp.csproj",
+  "TargetFramework": "netcoreapp2.2",
+  "TagHelpers": [],
+  "Configuration": {
+    "ConfigurationName": "UnsupportedRazor",
+    "LanguageVersion": "1.0",
+    "Extensions": [
+      {
+        "ExtensionName": "UnsupportedRazorExtension"
+      }
+    ]
+  }
+}

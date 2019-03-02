@@ -1,0 +1,11 @@
+C:\Users\Charles H Codeboxx\Desktop\Odyssey\Week_3_CSharp\bin\Debug\netcoreapp2.2\Week_3_CSharp.deps.json
+C:\Users\Charles H Codeboxx\Desktop\Odyssey\Week_3_CSharp\bin\Debug\netcoreapp2.2\Week_3_CSharp.runtimeconfig.json
+C:\Users\Charles H Codeboxx\Desktop\Odyssey\Week_3_CSharp\bin\Debug\netcoreapp2.2\Week_3_CSharp.runtimeconfig.dev.json
+C:\Users\Charles H Codeboxx\Desktop\Odyssey\Week_3_CSharp\bin\Debug\netcoreapp2.2\Week_3_CSharp.dll
+C:\Users\Charles H Codeboxx\Desktop\Odyssey\Week_3_CSharp\bin\Debug\netcoreapp2.2\Week_3_CSharp.pdb
+C:\Users\Charles H Codeboxx\Desktop\Odyssey\Week_3_CSharp\obj\Debug\netcoreapp2.2\Week_3_CSharp.csprojAssemblyReference.cache
+C:\Users\Charles H Codeboxx\Desktop\Odyssey\Week_3_CSharp\obj\Debug\netcoreapp2.2\Week_3_CSharp.csproj.CoreCompileInputs.cache
+C:\Users\Charles H Codeboxx\Desktop\Odyssey\Week_3_CSharp\obj\Debug\netcoreapp2.2\Week_3_CSharp.AssemblyInfoInputs.cache
+C:\Users\Charles H Codeboxx\Desktop\Odyssey\Week_3_CSharp\obj\Debug\netcoreapp2.2\Week_3_CSharp.AssemblyInfo.cs
+C:\Users\Charles H Codeboxx\Desktop\Odyssey\Week_3_CSharp\obj\Debug\netcoreapp2.2\Week_3_CSharp.dll
+C:\Users\Charles H Codeboxx\Desktop\Odyssey\Week_3_CSharp\obj\Debug\netcoreapp2.2\Week_3_CSharp.pdb
